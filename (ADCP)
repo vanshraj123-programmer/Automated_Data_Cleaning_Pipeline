@@ -3,36 +3,12 @@ import numpy as np
 import os
 import datetime
 
-# --- SETTING UP THE ENVIRONMENT ---
-# This tool handles "Dirty" sales data (names, prices, dates, etc.)
-
 def log_message(message):
     timestamp = datetime.datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {message}")
 
 def generate_sample_data():
-    """Generates a 'dirty' dataset for you to practice on in Pydroid 3"""# 🚀 Data Cleaning & Analytics Pipeline
-**Developer:** Vansh Raj  
-**Environment:** Pydroid 3 (Mobile Development)
-
-### 📌 Project Overview
-This project is a professional-grade Python automation tool designed to transform "dirty" raw data into structured, actionable sales reports. 
-
-### 🛠 Key Features
-* **Data Ingestion:** Seamlessly reads CSV and Excel datasets using `Pandas`.
-* **Automated Cleaning:** * Identifies and removes duplicate entries.
-    * Trims whitespace and standardizes text formatting.
-* **Advanced Analytics:** Calculates Total Revenue and Average Order Value (AOV).
-
-### 📊 Sample Output
-```text
-==============================
-      SALES REPORT      
-==============================
-Total Revenue: 3983.33
-Average Order Value: 569.05
-==============================
-
+    """Generates a 'dirty' dataset"""
     data = {
         'Order_ID': [101, 102, 103, 104, 105, 101, 107, np.nan],
         'Product': ['Laptop', 'Mouse', 'Monitor', ' Keyboard ', 'Mouse', 'Laptop', 'Tablet', 'Phone'],
@@ -45,8 +21,6 @@ Average Order Value: 569.05
     log_message("Sample 'dirty_data.csv' created.")
 
 def professional_cleaner(input_file):
-    """The main logic that cleans and analyzes the data"""
-    
     if not os.path.exists(input_file):
         log_message(f"Error: {input_file} not found!")
         return
@@ -54,42 +28,28 @@ def professional_cleaner(input_file):
     log_message(f"Loading data from {input_file}...")
     df = pd.read_csv(input_file)
 
-    # 1. REMOVE DUPLICATES
-    # Clients hate double-counting sales.
+    # Remove duplicates
     initial_count = len(df)
     df.drop_duplicates(inplace=True)
     log_message(f"Removed {initial_count - len(df)} duplicate rows.")
 
-    # 2. STRING CLEANING
-    # Fixes ' Keyboard ' (with spaces) to 'Keyboard'
-    log_message("Trimming whitespace from text columns...")
+    # Clean strings
     df['Product'] = df['Product'].str.strip()
 
-    # 3. FIXING DATA TYPES (The 'Math' part)
-    # Converts Price to numbers, turns errors into 'NaN'
-    log_message("Converting Price column to numeric...")
+    # Convert price
     df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
-    
-    # 4. HANDLING MISSING VALUES
-    # Filling missing Quantities with 1 (standard assumption)
-    # Filling missing Prices with the average (mean)
-    log_message("Filling missing values...")
+
+    # Fill missing values
     df['Quantity'] = df['Quantity'].fillna(1)
     df['Price'] = df['Price'].fillna(df['Price'].mean())
 
-    # 5. DATE STANDARDIZATION
-    # Clients often have dates in 5 different formats. This fixes them all.
-    log_message("Standardizing date formats...")
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=False)
+    # Fix dates
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
-    # 6. FEATURE ENGINEERING
-    # Calculating total revenue per row
-    log_message("Calculating Total Revenue per item...")
+    # Feature engineering
     df['Total_Revenue'] = df['Price'] * df['Quantity']
 
-    # 7. DATA ANALYTICS SUMMARY
-    # This is what the client actually pays for.
-    log_message("Generating summary statistics...")
+    # Summary
     summary = {
         'Total Revenue': df['Total_Revenue'].sum(),
         'Average Order Value': df['Total_Revenue'].mean(),
@@ -97,41 +57,40 @@ def professional_cleaner(input_file):
         'Items Sold': df['Quantity'].sum()
     }
 
-    # 8. EXPORTING THE RESULTS
+    # Save CSV
     output_name = 'clean_sales_report.csv'
     df.to_csv(output_name, index=False)
-    
-    # Printing the final report for the user
+
     print("\n" + "="*30)
     print("      SALES REPORT      ")
     print("="*30)
     for key, value in summary.items():
         print(f"{key}: {value:.2f}" if isinstance(value, float) else f"{key}: {value}")
     print("="*30)
+
     log_message(f"Success! Cleaned data saved as {output_name}")
 
-# --- EXECUTION BLOCK ---
+    return df  # important for next function
+
+def export_to_excel_sheets(df, filename):
+    """Save multiple sheets"""
+    try:
+        with pd.ExcelWriter(filename) as writer:
+            df.to_excel(writer, sheet_name='Master Data', index=False)
+
+            high_value = df[df['Total_Revenue'] > 100]
+            high_value.to_excel(writer, sheet_name='High Value Orders', index=False)
+
+        log_message("Excel file created successfully.")
+    except Exception as e:
+        log_message(f"Excel export failed: {e}")
+
+# --- MAIN ---
 if __name__ == "__main__":
-    # Create the fake messy data first
     generate_sample_data()
-    
-    # Run the professional cleaning process
-    professional_cleaner('dirty_data.csv')
+    cleaned_df = professional_cleaner('dirty_data.csv')
 
-    # To reach the 150 line mark in a real project, we add 
-    # more specific modules like charting or multi-sheet export:
-    def export_to_excel_sheets(df, filename):
-        """Advanced feature: Saving different products to different tabs"""
-        # Requires: pip install openpyxl
-        try:
-            with pd.ExcelWriter(filename) as writer:
-                df.to_sheet(writer, sheet_name='Master Data')
-                # Create a tab for high-value orders only (> $100)
-                high_value = df[df['Total_Revenue'] > 100]
-                high_value.to_excel(writer, sheet_name='High Value Orders')
-            log_message("Excel workbook with multiple sheets created.")
-        except Exception as e:
-            log_message(f"Excel export failed (likely missing openpyxl): {e}")
+    if cleaned_df is not None:
+        export_to_excel_sheets(cleaned_df, 'sales_report.xlsx')
 
-    # Adding extra logic for the user to see how deep coding goes
-    log_message("Process complete. You are ready to sell this service.")
+    log_message("Process complete 🚀")
