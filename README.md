@@ -30,12 +30,6 @@ python main.py
 ---
 
 ## 🧪 Example Input (Dirty Data)
-data = {
-    'Order_ID': [101, 102, 103, 104, 105],
-    'Product': ['Laptop', 'Mouse', ' Keyboard ', 'Mouse', 'Tablet'],
-    'Price': ['1200', '25', 'invalid', '25', '450'],
-    'Quantity': [1, 2, None, 2, 3]
-}
 
 ---
 
