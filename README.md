@@ -53,7 +53,7 @@ Average Order Value: 569.05
 
 ---
 
-## 📁 Output Files
+## 📁 Output File
 clean_sales_report.csv  
 sales_report.xlsx  
 
